@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import IProducto from '../types/IProducto';
 import CartProduct from '../types/CartProduct';
 
-
 const useCartLogic = () => {
   const [cart, setCart] = useState<CartProduct[]>(
     () => JSON.parse(localStorage.getItem('cart') || '[]')
@@ -39,7 +38,11 @@ const useCartLogic = () => {
     }
   };
 
-  return { cart, addToCart, removeFromCart };
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  return { cart, addToCart, removeFromCart, clearCart };
 };
 
 export default useCartLogic;

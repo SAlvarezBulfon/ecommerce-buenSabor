@@ -9,7 +9,7 @@ import IProducto from '../types/IProducto';
 import Main from '../components/screens/Landing/Main';
 
 const Rutas: React.FC = () => {
-  const { cart, addToCart, removeFromCart } = useCartLogic();
+  const { cart, addToCart, removeFromCart, clearCart } = useCartLogic(); 
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   return (
@@ -22,13 +22,12 @@ const Rutas: React.FC = () => {
           onClose={() => setIsCartOpen(false)}
           onAddToCart={(productId) => addToCart(productId, productosEjemplo)}
           onRemoveFromCart={removeFromCart}
+          onClearCart={clearCart} 
         />
         <Routes>
-        <Route
+          <Route
             path="/"
-            element={
-              <Main />
-            }
+            element={<Main />}
           />
           <Route
             path="/productos"
@@ -37,10 +36,8 @@ const Rutas: React.FC = () => {
                 products={productosEjemplo}
                 addToCart={(productId: number, products: IProducto[]) => addToCart(productId, products)}
               />
-
             }
           />
-
         </Routes>
       </div>
     </Router>

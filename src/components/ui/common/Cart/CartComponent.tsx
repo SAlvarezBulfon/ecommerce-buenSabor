@@ -9,9 +9,10 @@ interface CartComponentProps {
   onClose: () => void;
   onAddToCart: (productId: number, products: IProducto[]) => void; 
   onRemoveFromCart: (productId: number) => void;
+  onClearCart: () => void; // Agrega la prop para vaciar el carrito
 }
 
-const CartComponent: React.FC<CartComponentProps> = ({ cart, open, onClose, onAddToCart, onRemoveFromCart }) => {
+const CartComponent: React.FC<CartComponentProps> = ({ cart, open, onClose, onAddToCart, onRemoveFromCart, onClearCart }) => {
   const total = cart.reduce((sum, product) => sum + product.precioVenta * product.quantity, 0).toFixed(2);
 
   return (
@@ -31,8 +32,13 @@ const CartComponent: React.FC<CartComponentProps> = ({ cart, open, onClose, onAd
           <Typography variant="subtitle1">Total: ${total}</Typography>
         </ListItem>
         <ListItem>
+        <Button variant="outlined" color="primary" fullWidth onClick={onClearCart}>
+            Vaciar carrito
+          </Button>
+        </ListItem>
+        <ListItem>
           <Button variant="contained" color="primary" fullWidth>
-          Realizar pedido
+            Realizar pedido
           </Button>
         </ListItem>
       </List>
