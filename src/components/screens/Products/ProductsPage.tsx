@@ -5,7 +5,7 @@ import ProductCard from '../../ui/Cards/ProductCard';
 
 interface ProductosPageProps {
   products: IProducto[];
-  addToCart: (productId: number, products: IProducto[]) => void; // Corregir el tipo de addToCart
+  addToCart: (productId: number, products: IProducto[]) => void;
 }
 
 const ProductosPage: React.FC<ProductosPageProps> = ({ products, addToCart }) => {
@@ -39,13 +39,8 @@ const ProductosPage: React.FC<ProductosPageProps> = ({ products, addToCart }) =>
         <Grid container spacing={2}>
           {filteredProducts.map((product) => (
             <Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
-              <Box
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                sx={{ height: '100%', width: '100%' }}
-              >
-                <ProductCard product={product} addToCart={(productId: number, products: IProducto[]) => addToCart(productId, products)} />
+              <Box display="flex" justifyContent="center" width="100%">
+                <ProductCard product={product} addToCart={addToCart} />
               </Box>
             </Grid>
           ))}

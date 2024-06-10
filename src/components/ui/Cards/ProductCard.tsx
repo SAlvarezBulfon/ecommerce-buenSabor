@@ -4,7 +4,7 @@ import IProducto from '../../../types/IProducto';
 
 interface ProductCardProps {
   product: IProducto;
-  addToCart: (productId: number, products: IProducto[]) => void; // Corregir el tipo de addToCart
+  addToCart: (productId: number, products: IProducto[]) => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart }) => {
@@ -13,8 +13,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart }) => {
   const handleAddToCart = async () => {
     try {
       setIsLoading(true);
-      // Solo necesitamos enviar el ID del producto al carrito
-      addToCart(product.id, [product]); // Corregir para que pase un array de productos como se espera
+      addToCart(product.id, [product]);
     } catch (error) {
       console.error('Error adding product to cart:', error);
     } finally {
@@ -23,7 +22,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart }) => {
   };
 
   return (
-    <Card sx={{ maxWidth: 345 }}>
+    <Card style={{ width: '100%' }}>
       <CardActionArea>
         <CardMedia
           component="img"
