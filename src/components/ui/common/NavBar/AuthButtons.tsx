@@ -13,8 +13,16 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ isAuthenticated }) => {
     loginWithRedirect();
   };
 
+  const handleRegister = () => {
+    loginWithRedirect({
+      authorizationParams: {
+        screen_hint: 'signup',
+      },
+    });
+  };
+
   const handleLogout = () => {
-    logout({logoutParams: { returnTo: '/' }});
+    logout({ logoutParams: { returnTo: window.location.origin } });
   };
 
   return (
@@ -25,10 +33,10 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ isAuthenticated }) => {
         </Button>
       ) : (
         <>
-          <Button variant='contained' color="secondary" onClick={handleLogin}>
+          <Button variant="contained" color="secondary" onClick={handleLogin}>
             Iniciar sesión
           </Button>
-          <Button variant='contained' color="secondary" onClick={handleLogin}>
+          <Button variant="contained" color="secondary" onClick={handleRegister}>
             Registrarse
           </Button>
         </>
