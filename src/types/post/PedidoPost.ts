@@ -5,10 +5,8 @@ import IDetallePedido from "../IDetallePedido";
 
 export default interface PedidoPost {
     id?: number; 
-    total: number;
-    totalCosto: number;
-    tipoEnvio: TipoEnvio;
-    formaPago: FormaPago;
+    tipoEnvio: string;
+    formaPago: string;
     fechaPedido?: string; 
     detallePedidos: IDetallePedido[];
     idCliente: number;
