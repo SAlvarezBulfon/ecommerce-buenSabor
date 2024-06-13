@@ -8,6 +8,7 @@ const NavLinks: React.FC = () => {
     <nav style={{ display: 'flex', gap: '16px' }}>
       <CustomLink to="/">Inicio</CustomLink>
      <CustomLink to="/productos">Tienda</CustomLink>
+     <CustomLink to="/mispedidos">Mis Pedidos</CustomLink>
     </nav>
   );
 };

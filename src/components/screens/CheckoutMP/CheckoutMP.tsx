@@ -1,4 +1,3 @@
-
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +7,6 @@ import { createPreferenceMP } from '../../../services/BackendClient';
 import { TipoEnvio } from '../../../types/enums/TipoEnvio';
 import { FormaPago } from '../../../types/enums/FormaPago';
 import './CheckoutMP.css';
-
 
 interface CheckoutMPProps {
   montoCarrito: number;
@@ -20,19 +18,18 @@ const CheckoutMP: React.FC<CheckoutMPProps> = ({ montoCarrito }) => {
 
   const getPreferenceMP = async () => {
     if (montoCarrito > 0) {
-   
-        const pedido: Pedido = {
-            fechaPedido: new Date().toISOString(),
-            total: 0, // Asigna un valor adecuado para 'total'
-            totalCosto: montoCarrito, // Asigna un valor adecuado para 'totalCosto'
-            tipoEnvio: TipoEnvio.DELIVERY, // Asigna un valor adecuado para 'tipoEnvio'
-            formaPago: FormaPago.EFECTIVO, // Asigna un valor adecuado para 'formaPago'
-            detallePedidos: [], // Asigna un valor adecuado para 'detallePedidos'
-            idCliente: 0, // Asigna un valor adecuado para 'idCliente'
-            idDomicilio: 0 // Asigna un valor adecuado para 'idDomicilio'
-          };
-          
-      
+      const pedido: Pedido = {
+        id: 0, 
+        fechaPedido: new Date().toISOString(),
+        total: montoCarrito, 
+        totalCosto: montoCarrito,
+        tipoEnvio: TipoEnvio.DELIVERY,
+        formaPago: FormaPago.EFECTIVO,
+        detallePedidos: [], 
+        idCliente: 0,
+        idDomicilio: 0
+      };
+
       const response: PreferenceMP = await createPreferenceMP(pedido);
       console.log("Preference id: " + response.id);
       if (response) {
@@ -45,7 +42,6 @@ const CheckoutMP: React.FC<CheckoutMPProps> = ({ montoCarrito }) => {
 
   useEffect(() => {
     initMercadoPago('TEST-5b58b558-60aa-484c-8fff-a76c3e78d96a', { locale: 'es-AR' });
-    
   }, []);
 
   return (

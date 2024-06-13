@@ -12,6 +12,7 @@ import CallbackPage from '../components/auth/CallbackPage';
 import { fetchProductos } from '../redux/thunks/productoThunks';
 import IProducto from '../types/IProducto';
 import { AppDispatch, RootState } from '../redux/store/store';
+import MisPedidos from '../components/screens/MisPedidos/MisPedidos';
 
 
 const Rutas: React.FC = () => {
@@ -61,6 +62,7 @@ const Rutas: React.FC = () => {
         <Route path="/productos" element={
           isAuthenticated && isRegistered ? (
             <ProductosPage products={productos} addToCart={(productId: number, products: IProducto[]) => addToCart(productId, products)} />
+
           ) : (
             <Navigate to="/registro" />
           )
@@ -70,6 +72,7 @@ const Rutas: React.FC = () => {
         } />
         <Route path="/callback" element={<CallbackPage />} />
         <Route path="/" element={<Main />} />
+        <Route path="/mispedidos" element={<MisPedidos/>} />
       </Routes>
     </div>
   );

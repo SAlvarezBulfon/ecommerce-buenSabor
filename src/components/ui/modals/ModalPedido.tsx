@@ -43,7 +43,7 @@ const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, product, total
   const [finalizado, setFinalizado] = useState<boolean>(false);
   const [montoCarrito, setMontoCarrito] = useState<number>(0);
   const URL: string = import.meta.env.VITE_API_URL as string;
-
+  
   useEffect(() => {
     if (selectedTipoEnvio === "DELIVERY") {
       setSelectedFormaPago("MERCADO_PAGO");
@@ -57,6 +57,7 @@ const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, product, total
       setFinalCost(totalCost);
     }
   }, [selectedTipoEnvio, totalCost]);
+
 
   useEffect(() => {
     const fetchPaises = async () => {
@@ -137,7 +138,7 @@ const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, product, total
         formaPago: selectedFormaPago!,
         detallePedidos: cart.map((item) => ({
           cantidad: item.quantity,
-          subTotal:  parseFloat(finalCost.toFixed(2)),
+          subTotal:  parseFloat(totalCost.toFixed(2)),
           idArticulo: item.id
         })),
         idCliente: 1,

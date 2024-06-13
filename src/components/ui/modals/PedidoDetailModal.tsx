@@ -2,7 +2,6 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@mui/material';
 import IPedido from '../../../types/IPedido';
 
-
 interface PedidoDetailModalProps {
   open: boolean;
   onClose: () => void;
@@ -17,13 +16,12 @@ const PedidoDetailModal: React.FC<PedidoDetailModalProps> = ({ open, onClose, pe
       <DialogTitle>Detalles del Pedido</DialogTitle>
       <DialogContent>
         <Typography variant="body1">ID Pedido: {pedido.id}</Typography>
-        <Typography variant="body1">Total Costo: ${pedido.totalCosto}</Typography>
         <Typography variant="body1">Forma de Pago: {pedido.formaPago}</Typography>
         <Typography variant="body1">Fecha: {pedido.fechaPedido}</Typography>
         <Typography variant="h6">Detalles:</Typography>
         {pedido.detallePedidos.map((detalle, index) => (
           <Typography key={index} variant="body2">
-            {detalle.idArticulo} - Cantidad: {detalle.cantidad} - SubTotal: ${detalle.subTotal}
+            {detalle.idArticulo} - Cantidad: {detalle.cantidad} - Total: ${detalle.subTotal}
           </Typography>
         ))}
       </DialogContent>

@@ -8,7 +8,11 @@ export default interface PedidoPost {
     tipoEnvio: string;
     formaPago: string;
     fechaPedido?: string; 
-    detallePedidos: IDetallePedido[];
+    detallePedidos: {
+        cantidad: number;
+        subTotal: number;
+        idArticulo: number;
+      }[];
     idCliente: number;
     idDomicilio: number; 
 }
