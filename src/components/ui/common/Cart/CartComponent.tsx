@@ -18,9 +18,9 @@ const CartComponent: React.FC<CartComponentProps> = ({ cart, open, onClose, onAd
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controlar si el modal está abierto
   const [selectedProduct, setSelectedProduct] = useState<CartProduct | null>(null); // Estado para almacenar el producto seleccionado
 
-  const shippingCost = 1200;
+  //const shippingCost = 1200;
   const total = cart.reduce((sum, product) => sum + product.precioVenta * product.quantity, 0).toFixed(2);
-  const totalCost = (parseFloat(total) + shippingCost).toFixed(2);
+  const totalCost = (parseFloat(total)).toFixed(2);
 
   const handleRealizarPedido = (product: CartProduct) => {
     setSelectedProduct(product); // Almacena el producto seleccionado

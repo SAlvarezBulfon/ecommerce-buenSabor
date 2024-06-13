@@ -14,7 +14,6 @@ import CartProduct from '../../../types/CartProduct';
 import { TipoEnvio } from '../../../types/enums/TipoEnvio';
 import { FormaPago } from '../../../types/enums/FormaPago';
 import PedidoService from '../../../services/PedidoService';
-import IPedido from '../../../types/IPedido';
 import PedidoPost from '../../../types/post/PedidoPost';
 import CheckoutMP from '../../screens/CheckoutMP/CheckoutMP';
 
@@ -131,41 +130,39 @@ const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, product, total
   
   const handleSubmit = async () => {
     try {
-      let idDomicilio: number | undefined = undefined; // Inicializa como undefined
+      let idDomicilio: number | undefined = undefined;
       if (selectedLocalidad !== null) {
-          idDomicilio = parseInt(selectedLocalidad.toString()); // Convierte a number si no es null
+        idDomicilio = parseInt(selectedLocalidad.toString());
       }
-    
+  
       const pedidoPost: PedidoPost = {
         total: parseFloat(totalCost.toFixed(2)),
         totalCosto: parseFloat(finalCost.toFixed(2)),
-        tipoEnvio: TipoEnvio.DELIVERY,
-        formaPago: FormaPago.EFECTIVO,
+        tipoEnvio: selectedTipoEnvio!,
+        formaPago: selectedFormaPago!,
         detallePedidos: cart.map((item) => ({
-            cantidad: item.quantity,
-            subTotal: finalCost,
-            idArticulo: item.id
+          cantidad: item.quantity,
+          subTotal: item.precioVenta, 
+          idArticulo: item.id
         })),
-        idCliente: 1, // Cliente harcodeado
-        idDomicilio: idDomicilio ?? 0, 
-    };
-    
-    try {
+        idCliente: 1,
+        idDomicilio: idDomicilio ?? 0,
+      };
+  
+      console.log('Sending pedidoPost:', JSON.stringify(pedidoPost, null));
+  
       await pedidoService.post(`${URL}/pedido`, pedidoPost) as PedidoPost;
-      setPedidoConfirmed(true); // Marcar el pedido como confirmado
+      setPedidoConfirmed(true);
       alert('Pedido realizado exitosamente');
       setMontoCarrito(totalCost);
       setFinalizado(true);
-  } catch (error) {
+    } catch (error) {
       console.error('Error al realizar el pedido:', error);
       alert('Error al realizar el pedido');
-  }
-  
-    } catch (error) {
-      
-        console.error('Error al enviar el pedido:', error);
     }
   };
+  
+  
 
 
   return (
@@ -308,7 +305,7 @@ const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, product, total
       <DialogActions>
       
         
-        {finalizado ? (
+        {!finalizado ? (
        <Button onClick={handleSubmit} color="primary">
        Confirmar Pedido
      </Button>
