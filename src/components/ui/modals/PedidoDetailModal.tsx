@@ -18,6 +18,7 @@ const PedidoDetailModal: React.FC<PedidoDetailModalProps> = ({ open, onClose, pe
         <Typography variant="body1">ID Pedido: {pedido.id}</Typography>
         <Typography variant="body1">Forma de Pago: {pedido.formaPago}</Typography>
         <Typography variant="body1">Fecha: {pedido.fechaPedido}</Typography>
+        <Typography variant="body1">Estado: {pedido.estado}</Typography>
         <Typography variant="h6">Detalles:</Typography>
         {pedido.detallePedidos.map((detalle, index) => (
           <Typography key={index} variant="body2">

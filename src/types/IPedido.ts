@@ -7,6 +7,7 @@ export default interface IPedido {
   id?: number;
   tipoEnvio: TipoEnvio;
   formaPago: FormaPago;
+  estado:string;
   fechaPedido?: string;
   detallePedidos: IDetallePedido[];
   idCliente: number;
