@@ -1,3 +1,5 @@
+import IPedido from "../types/IPedido";
+import PreferenceMP from "../types/mercadopago/PreferenceMP";
 import { AbstractBackendClient } from "./AbstractBackendClient";
 
 export default abstract class BackendClient<T> extends AbstractBackendClient<T> {
@@ -152,4 +154,22 @@ export default abstract class BackendClient<T> extends AbstractBackendClient<T> 
     };
     await this.request(path, options);
   }
+}
+
+export async function createPreferenceMP(pedido: IPedido): Promise<PreferenceMP> {
+  const urlServer = 'http://localhost:8080/apiMp';
+  const method = "POST";
+  const response = await fetch(urlServer, {
+    method: method,
+    body: JSON.stringify(pedido),
+    headers: {
+      "Content-Type": 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error();
+  }
+
+  return await response.json() as PreferenceMP;
 }

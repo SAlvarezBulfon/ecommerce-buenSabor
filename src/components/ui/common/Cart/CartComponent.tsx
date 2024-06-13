@@ -1,127 +1,94 @@
-import React, { useState } from 'react';
-import { Drawer, List, ListItem, ListItemText, Typography, Button, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import IProducto from '../../../../types/IProducto';
+import React, { useEffect, useState } from 'react';
+import { Button, Typography, ListItem, List, Drawer, ListItemText } from '@mui/material';
 import CartProduct from '../../../../types/CartProduct';
+import IProducto from '../../../../types/IProducto';
+import ModalPedido from '../../modals/ModalPedido';
+
 
 interface CartComponentProps {
   cart: CartProduct[];
   open: boolean;
   onClose: () => void;
-  onAddToCart: (productId: number, products: IProducto[]) => void; 
+  onAddToCart: (productId: number, products: IProducto[]) => void;
   onRemoveFromCart: (productId: number) => void;
-  onClearCart: () => void; 
+  onClearCart: () => void;
 }
 
 const CartComponent: React.FC<CartComponentProps> = ({ cart, open, onClose, onAddToCart, onRemoveFromCart, onClearCart }) => {
-  const [paymentMethod, setPaymentMethod] = useState('EFECTIVO');
-  const [orderDetails, setOrderDetails] = useState<any>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controlar si el modal está abierto
+  const [selectedProduct, setSelectedProduct] = useState<CartProduct | null>(null); // Estado para almacenar el producto seleccionado
 
   const shippingCost = 1200;
   const total = cart.reduce((sum, product) => sum + product.precioVenta * product.quantity, 0).toFixed(2);
   const totalCost = (parseFloat(total) + shippingCost).toFixed(2);
 
-  const handlePlaceOrder = () => {
-    const orderData = {
-      horaEstimadaFinalizacion: new Date(Date.now() + 3600000).toLocaleTimeString(), 
-      total: parseFloat(total),
-      totalCosto: parseFloat(totalCost),
-      estado: 'PREPARACION',
-      tipoEnvio: 'DELIVERY',
-      formaPago: paymentMethod,
-      fechaPedido: new Date().toISOString().split('T')[0], 
-      idSucursal: 0 
-    };
-
-    fetch('http://localhost:8080/pedido', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(orderData)
-    })
-    .then(response => response.json())
-    .then(data => {
-      setOrderDetails(data);
-      setDialogOpen(true);
-      onClearCart();
-      onClose();
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
-  };
-
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
+  const handleRealizarPedido = (product: CartProduct) => {
+    setSelectedProduct(product); // Almacena el producto seleccionado
+    setIsModalOpen(true); // Abre el modal al hacer clic en "Realizar Pedido"
   };
 
   return (
     <>
-      <Drawer anchor="right" open={open} onClose={onClose}>
+    <Drawer anchor="right" open={open} onClose={onClose}>
         <List sx={{ width: 300 }}>
           <ListItem>
             <Typography variant="h6">Carrito de Compras</Typography>
           </ListItem>
           {cart.map((product) => (
             <ListItem key={product.id}>
-              <ListItemText primary={product.descripcion} secondary={`$${product.precioVenta} x ${product.quantity}`} />
-              <Button onClick={() => onRemoveFromCart(product.id)}>-</Button>
-              <Button onClick={() => onAddToCart(product.id, cart)}>+</Button>
+              <ListItemText
+                primary={product.denominacion}
+                secondary={`$${product.precioVenta} x ${product.quantity}`}
+              />
+              <Button
+                onClick={() => onAddToCart(product.id, cart)}
+                size="small"
+              >
+                +
+              </Button>
+              <Button
+                onClick={() => onRemoveFromCart(product.id)}
+                size="small"
+              >
+                -
+              </Button>
             </ListItem>
           ))}
           <ListItem>
-            <Typography variant="subtitle1">Total: ${total}</Typography>
+            <Typography variant="body1">Total: ${total}</Typography>
           </ListItem>
+          {cart.map((product) => (
           <ListItem>
-            <Typography variant="subtitle1">Costo de Envío: ${shippingCost}</Typography>
-          </ListItem>
-          <ListItem>
-            <Typography variant="subtitle1">Total Costo: ${totalCost}</Typography>
-          </ListItem>
-          <ListItem>
-            <FormControl fullWidth>
-              <InputLabel>Forma de Pago</InputLabel>
-              <Select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              >
-                <MenuItem value="EFECTIVO">Efectivo</MenuItem>
-                <MenuItem value="MERCADO_PAGO">Mercado Pago</MenuItem>
-              </Select>
-            </FormControl>
-          </ListItem>
-          <ListItem>
-            <Button variant="outlined" color="primary" fullWidth onClick={onClearCart}>
-              Vaciar carrito
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              onClick={() => handleRealizarPedido(product)}// Abre el modal al hacer clic en "Realizar Pedido"
+            >
+              Realizar Pedido
             </Button>
           </ListItem>
+          ))}
           <ListItem>
-            <Button variant="contained" color="primary" fullWidth onClick={handlePlaceOrder}>
-              Realizar pedido
+            <Button
+              variant="outlined"
+              color="secondary"
+              fullWidth
+              onClick={onClearCart}
+            >
+              Vaciar Carrito
             </Button>
           </ListItem>
         </List>
       </Drawer>
-      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
-        <DialogTitle>Pedido</DialogTitle>
-        <DialogContent>
-          {orderDetails && (
-            <>
-              <Typography variant="body1">Total Costo: ${orderDetails.totalCosto}</Typography>
-              <Typography variant="body1">Forma de Pago: {orderDetails.formaPago}</Typography>
-              <Typography variant="body1">Tiempo Estimado: {orderDetails.horaEstimadaFinalizacion}</Typography>
-              <Typography variant="body1">Fecha: {orderDetails.fechaPedido}</Typography>
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} color="primary">
-            Cerrar
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+       <ModalPedido
+       open={isModalOpen} // Estado para controlar si el modal está abierto
+       onClose={() => setIsModalOpen(false)} // Función para cerrar el modal
+       product={selectedProduct} // Pasa el producto seleccionado al modal
+       totalCost={parseFloat(totalCost)} // Pasar el totalCost como una prop al modal
+       cart={cart} // Pasar el estado del carrito como una prop al modal
+     />
+     </>
   );
 };
 
