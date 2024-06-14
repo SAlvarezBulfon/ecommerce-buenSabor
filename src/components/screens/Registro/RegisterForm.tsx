@@ -150,13 +150,14 @@ const RegisterForm: React.FC = () => {
                     piso: values.piso,
                     nroDpto: values.nroDpto,
                     idLocalidad: selectedLocalidad
-                }]
+                }],
+                imagenUrl: user.picture || ''
             };
 
             try {
                 await clienteService.post(URL + '/clientes', clientePost);
                 alert('Cliente registrado exitosamente');
-                navigate('/productos');
+                navigate(0);
             } catch (error) {
                 console.error('Error al registrar cliente:', error);
                 alert('Error al registrar cliente');

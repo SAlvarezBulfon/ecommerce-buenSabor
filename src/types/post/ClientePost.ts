@@ -7,5 +7,6 @@ export default interface ClientePost{
     telefono: string;
     email: string;
     fechaNacimiento: string;
-    domicilios: DomicilioPost[]
+    domicilios: DomicilioPost[];
+    imagenUrl: string;
 }

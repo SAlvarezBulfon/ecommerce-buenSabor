@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useAuth0 } from '@auth0/auth0-react';
 import Navbar from '../components/ui/common/NavBar/NavBar';
@@ -14,9 +14,9 @@ import IProducto from '../types/IProducto';
 import { AppDispatch, RootState } from '../redux/store/store';
 import MisPedidos from '../components/screens/MisPedidos/MisPedidos';
 
-
 const Rutas: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
+  const navigate = useNavigate();
   const productos = useSelector((state: RootState) => state.productos.data);
   const { cart, addToCart, removeFromCart, clearCart } = useCartLogic();
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -25,7 +25,7 @@ const Rutas: React.FC = () => {
   const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
 
   useEffect(() => {
-    dispatch(fetchProductos()).catch(error => {
+    dispatch(fetchProductos()).catch((error) => {
       console.error('Error al despachar fetchProductos:', error);
     });
   }, [dispatch]);
@@ -33,18 +33,28 @@ const Rutas: React.FC = () => {
   useEffect(() => {
     const checkRegistration = async () => {
       if (isAuthenticated && user?.email) {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/clientes/email/${encodeURIComponent(user.email)}`
-        );
+        try {
+          const response = await fetch(
+            `${import.meta.env.VITE_API_URL}/clientes/email/${encodeURIComponent(user.email)}`
+          );
 
-        setIsRegistered(response.ok);
+          const isUserRegistered = response.headers.get('content-length') !== '0';
+          setIsRegistered(isUserRegistered);
+        } catch (error) {
+          console.error('Error en la solicitud de verificación del email del cliente:', error);
+          setIsRegistered(false);
+        }
       } else {
         setIsRegistered(false);
       }
     };
 
     checkRegistration();
-  }, [isAuthenticated, user?.email]);
+  }, [isAuthenticated, user?.email, navigate]);
+
+  if (isRegistered === null) {
+    return <div>Cargando...</div>; 
+  }
 
   return (
     <div>
@@ -59,20 +69,33 @@ const Rutas: React.FC = () => {
       />
 
       <Routes>
-        <Route path="/productos" element={
-          isAuthenticated && isRegistered ? (
-            <ProductosPage products={productos} addToCart={(productId: number, products: IProducto[]) => addToCart(productId, products)} />
-
-          ) : (
-            <Navigate to="/registro" />
-          )
-        } />
-        <Route path="/registro" element={
-          isAuthenticated && isRegistered === false ? <RegisterForm /> : <Navigate to="/" />
-        } />
+        <Route
+          path="/productos"
+          element={
+            isAuthenticated && isRegistered ? (
+              <ProductosPage
+                products={productos}
+                addToCart={(productId: number, products: IProducto[]) => addToCart(productId, products)}
+              />
+            ) : (
+              <Navigate to="/registro" />
+            )
+          }
+        />
+        <Route
+          path="/registro"
+          element={
+            isAuthenticated && isRegistered === false ? <RegisterForm /> : <Navigate to="/" />
+          }
+        />
         <Route path="/callback" element={<CallbackPage />} />
         <Route path="/" element={<Main />} />
-        <Route path="/mispedidos" element={<MisPedidos/>} />
+        <Route
+          path="/mispedidos"
+          element={
+            isAuthenticated && isRegistered ? <MisPedidos /> : <Navigate to="/registro" />
+          }
+        />
       </Routes>
     </div>
   );
