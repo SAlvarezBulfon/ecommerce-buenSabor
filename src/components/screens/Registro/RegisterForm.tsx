@@ -16,6 +16,7 @@ import ILocalidad from '../../../types/ILocalidad';
 import IProvincia from '../../../types/IProvincia';
 import IPais from '../../../types/IPais';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 const RegisterForm: React.FC = () => {
     const { user, isAuthenticated } = useAuth0();
@@ -156,12 +157,23 @@ const RegisterForm: React.FC = () => {
 
             try {
                 await clienteService.post(URL + '/clientes', clientePost);
-                alert('Cliente registrado exitosamente');
-                navigate(0);
-            } catch (error) {
+                Swal.fire({
+                  title: 'Registro exitoso',
+                  text: 'Cliente registrado exitosamente',
+                  icon: 'success',
+                  confirmButtonText: 'Aceptar'
+                }).then(() => {
+                  navigate(0); // Recarga la página
+                });
+              } catch (error) {
                 console.error('Error al registrar cliente:', error);
-                alert('Error al registrar cliente');
-            }
+                Swal.fire({
+                  title: 'Error',
+                  text: 'Error al registrar cliente',
+                  icon: 'error',
+                  confirmButtonText: 'Aceptar'
+                });
+              }
         },
     });
     
