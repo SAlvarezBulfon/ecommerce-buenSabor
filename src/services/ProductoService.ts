@@ -25,4 +25,11 @@ export default class ProductoService extends BackendClient<IProducto> {
     });
     return response.data;
   }
+
+  async getPaginatedProductsByCategory(page: number, size: number, categoryId: number, url: string): Promise<PaginatedResponse<IProducto>> {
+    const response: AxiosResponse<PaginatedResponse<IProducto>> = await axios.get(`${url}/eCommerce/allArticulosByCategoriaId${categoryId}`, {
+      params: { page, size }
+    });
+    return response.data;
+  }
 }

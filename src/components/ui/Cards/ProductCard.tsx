@@ -21,14 +21,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart }) => {
     }
   };
 
+  // Check both imagenUrls and imagenes for the image source
+  const imageUrl = product.imagenUrls && product.imagenUrls.length > 0 
+    ? product.imagenUrls[0]
+    : product.imagenes && product.imagenes.length > 0
+      ? product.imagenes[0]
+      : '';
+
   return (
     <Card style={{ width: '100%' }}>
       <CardActionArea>
-        {product.imagenes.length > 0 && (
+        {imageUrl && (
           <CardMedia
             component="img"
             height="140"
-            image={String(product.imagenes[0])}
+            image={String(imageUrl)}
             alt={product.denominacion}
           />
         )}

@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, TextField, Box, Container, Grid, Button, CircularProgress } from '@mui/material';
+import { Typography, TextField, Box, Container, Grid, Button, CircularProgress, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { SelectChangeEvent } from '@mui/material/Select';
 import IProducto from '../../../types/IProducto';
+import ICategoria from '../../../types/ICategoria';
 import ProductCard from '../../ui/Cards/ProductCard';
 import ProductoService from '../../../services/ProductoService';
+import CategoriaService from '../../../services/CategoriaService';
 
 const productoService = new ProductoService();
+const categoriaService = new CategoriaService();
 
 interface ProductosPageProps {
   addToCart: (productId: number, products: IProducto[]) => void;
@@ -16,16 +20,38 @@ const ProductosPage: React.FC<ProductosPageProps> = ({ addToCart }) => {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
-  const pageSize = 10; 
+  const [categories, setCategories] = useState<ICategoria[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const pageSize = 10;
   const url = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await categoriaService.getAll(url + '/categoria/getCategoriasArticulos');
+        setCategories(data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const data = await productoService.getPaginatedProducts(page, pageSize, url + '/eCommerce/allArticulos');
-        setProducts(data.content);
-        setTotalPages(data.totalPages);
+        if (selectedCategory !== null) {
+          const data = await productoService.getPaginatedProductsByCategory(page, pageSize, selectedCategory, url);
+          console.log(data.content)
+          setProducts(data.content);
+          setTotalPages(data.totalPages);
+        } else {
+          const data = await productoService.getPaginatedProducts(page, pageSize, url + '/eCommerce/allArticulos');
+          setProducts(data.content);
+          setTotalPages(data.totalPages);
+        }
       } catch (error) {
         console.error('Error fetching products:', error);
       } finally {
@@ -34,10 +60,20 @@ const ProductosPage: React.FC<ProductosPageProps> = ({ addToCart }) => {
     };
 
     fetchProducts();
-  }, [page]);
+  }, [page, selectedCategory]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleCategoryChange = (event: SelectChangeEvent<number | string>) => {
+    const value = event.target.value as number | string;
+    if (value === "") {
+      setSelectedCategory(null);
+    } else {
+      setSelectedCategory(value as number);
+    }
+    setPage(0);
   };
 
   const filteredProducts = products.filter((product) =>
@@ -53,14 +89,34 @@ const ProductosPage: React.FC<ProductosPageProps> = ({ addToCart }) => {
         <Typography variant="subtitle1" gutterBottom>
           Encuentra tu comida favorita en nuestra tienda
         </Typography>
-        <TextField
-          fullWidth
-          label="Buscar productos"
-          variant="outlined"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          style={{ marginBottom: 20 }}
-        />
+        <Box display="flex" width="100%" mb={2}>
+          <TextField
+            fullWidth
+            label="Buscar productos"
+            variant="outlined"
+            value={searchTerm}
+            onChange={handleSearchChange}
+            style={{ marginRight: 20 }}
+          />
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel id="category-select-label">Categoría</InputLabel>
+            <Select
+              labelId="category-select-label"
+              value={selectedCategory ?? ''}
+              onChange={handleCategoryChange}
+              label="Categoría"
+            >
+              <MenuItem value="">
+                <em>Todos</em>
+              </MenuItem>
+              {categories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.denominacion}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
         {loading ? (
           <CircularProgress />
         ) : (
