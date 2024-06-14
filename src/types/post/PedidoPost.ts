@@ -1,6 +1,3 @@
-import { FormaPago } from "../enums/FormaPago";
-import { TipoEnvio } from "../enums/TipoEnvio";
-import IDetallePedido from "../IDetallePedido";
 
 
 export default interface PedidoPost {

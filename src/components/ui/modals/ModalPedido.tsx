@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
-  Select, MenuItem, FormControl, InputLabel, TextField,
+  Select, MenuItem, FormControl, InputLabel, 
   Typography
 } from '@mui/material';
 import IPais from '../../../types/IPais';
 import IProvincia from '../../../types/IProvincia';
 import ILocalidad from '../../../types/ILocalidad';
-import PaisService from '../../../services/PaisService';
-import LocalidadService from '../../../services/LocalidadService';
-import ProvinciaService from '../../../services/ProvinciaService';
 import CartProduct from '../../../types/CartProduct';
 import PedidoService from '../../../services/PedidoService';
 import PedidoPost from '../../../types/post/PedidoPost';
 import CheckoutMP from '../../screens/CheckoutMP/CheckoutMP';
+import DomicilioService from '../../../services/DomicilioService';
+import ICliente from '../../../types/ICliente';
+import { useAuth0 } from '@auth0/auth0-react';
+import ClienteService from '../../../services/ClienteService';
+import IDomicilio from '../../../types/IDomicilio';
 
 interface ModalPedidoProps {
   open: boolean;
@@ -23,26 +25,21 @@ interface ModalPedidoProps {
   cart: CartProduct[];
 }
 
-const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, product, totalCost, cart }) => {
-  const [selectedTipoEnvio, setSelectedTipoEnvio] = useState<string | null>(null); // Changed to string
-  const [selectedFormaPago, setSelectedFormaPago] = useState<string | null>(null); // Changed to string
-  const [selectedPais, setSelectedPais] = useState<number | null>(null);
-  const [selectedProvincia, setSelectedProvincia] = useState<number | null>(null);
-  const [selectedLocalidad, setSelectedLocalidad] = useState<number>(0);
-  const [calle, setCalle] = useState<string>('');
-  const [numero, setNumero] = useState<number | null>(null);
-  const [cp, setCp] = useState<number | null>(null);
-  const [piso, setPiso] = useState<number | null>(null);
-  const [nroDpto, setNroDpto] = useState<number | null>(null);
-  const [paises, setPaises] = useState<IPais[]>([]);
-  const [provincias, setProvincias] = useState<IProvincia[]>([]);
-  const [localidades, setLocalidades] = useState<ILocalidad[]>([]);
+const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, totalCost, cart }) => {
+  const [selectedTipoEnvio, setSelectedTipoEnvio] = useState<string | null>(null); 
+  const [selectedFormaPago, setSelectedFormaPago] = useState<string | null>(null); 
+
   const [finalCost, setFinalCost] = useState<number>(0);
   const [pedidoConfirmed, setPedidoConfirmed] = useState<boolean>(false);
   const pedidoService = new PedidoService();
   const [finalizado, setFinalizado] = useState<boolean>(false);
   const [montoCarrito, setMontoCarrito] = useState<number>(0);
   const URL: string = import.meta.env.VITE_API_URL as string;
+  const domicilioService = new DomicilioService();
+  const clienteService = new ClienteService();
+  const [clienteId, setClienteId] = useState<ICliente[]>([]);
+  const [domicilioId,setDomicilio] = useState<IDomicilio[]>([]);
+  const { user } = useAuth0();
   
   useEffect(() => {
     if (selectedTipoEnvio === "DELIVERY") {
@@ -58,95 +55,83 @@ const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, product, total
     }
   }, [selectedTipoEnvio, totalCost]);
 
-
+  
   useEffect(() => {
-    const fetchPaises = async () => {
+    const fetchCliente = async () => {
       try {
-        const paisService = new PaisService();
-        const paises = await paisService.getAll('http://localhost:8080/pais');
-        setPaises(paises);
+        if (user?.email) {
+          const response = await fetch(`${URL}/clientes/email/${encodeURIComponent(user.email)}`);
+          if (!response.ok) {
+            throw new Error('Error fetching client');
+          }
+          const cliente: ICliente = await response.json();
+          console.log(cliente, "cliente");
+         
+          const clientes = await clienteService.getAll(`${URL}/clientes/${cliente.id}`) as ICliente[];
+          setClienteId(clientes);
+        }
       } catch (error) {
-        console.error('Error fetching paises:', error);
+        console.error('Error fetching pedidos:', error);
       }
     };
 
-    fetchPaises();
+    fetchCliente();
   }, []);
-
   useEffect(() => {
-    const fetchProvincias = async () => {
+    const fetchDomicilio = async () => {
       try {
-        if (selectedPais !== null) {
-          const provinciaService = new ProvinciaService();
-          const provincias = await provinciaService.getAll(`http://localhost:8080/provincia/findByPais/${selectedPais}`);
-          setProvincias(provincias);
+        if (user?.email) {
+          const response = await fetch(`${URL}/clientes/email/${encodeURIComponent(user.email)}`);
+          if (!response.ok) {
+            throw new Error('Error fetching client');
+          }
+          const cliente: ICliente = await response.json();
+          console.log(cliente, "cliente");
+
+          const domicilio = await domicilioService.getAll(`${URL}/clientes/domicilios/${cliente.id}`) as IDomicilio[];
+          setDomicilio(domicilio);
         }
       } catch (error) {
-        console.error('Error fetching provincias:', error);
+        console.error('Error fetching pedidos:', error);
       }
     };
 
-    fetchProvincias();
-  }, [selectedPais]);
-
-  useEffect(() => {
-    const fetchLocalidades = async () => {
-      try {
-        if (selectedProvincia !== null) {
-          const localidadService = new LocalidadService();
-          const localidades = await localidadService.getAll(`http://localhost:8080/localidad/findByProvincia/${selectedProvincia}`);
-          setLocalidades(localidades);
-        }
-      } catch (error) {
-        console.error('Error fetching localidades:', error);
-      }
-    };
-
-    fetchLocalidades();
-  }, [selectedProvincia]);
-
-  const handlePaisChange = (event: any) => {
-    const paisId = event.target.value;
-    setSelectedPais(paisId);
-    setSelectedProvincia(null);
-    setSelectedLocalidad(0);
-    setProvincias([]);
-    setLocalidades([]);
-  };
-
-  const handleProvinciaChange = (event: any) => {
-    const provinciaId = event.target.value;
-    setSelectedProvincia(provinciaId);
-    setSelectedLocalidad(0);
-    setLocalidades([]);
-  };
-
-  const handleLocalidadChange = (event: any) => {
-    const localidadId = event.target.value;
-    setSelectedLocalidad(localidadId);
-  };
+    fetchDomicilio();
+  }, []);
 
   const handleSubmit = async () => {
     try {
-      let idDomicilio: number | undefined = undefined;
-      if (selectedLocalidad !== null) {
-        idDomicilio = parseInt(selectedLocalidad.toString());
+      console.log('Cliente ID:', clienteId);
+      console.log('Domicilio ID:', domicilioId);
+  
+      if (clienteId.length === 0 || domicilioId.length === 0) {
+        throw new Error('Cliente o domicilio no encontrados');
       }
-
+  
+      const clienteIdToUse = clienteId[0]?.id; // Usando optional chaining para acceder al ID
+      const domicilioIdToUse = domicilioId[0]?.id; // Usando optional chaining para acceder al ID
+  
+      console.log('Cliente ID a usar:', clienteIdToUse);
+      console.log('Domicilio ID a usar:', domicilioIdToUse);
+  
+      if (!clienteIdToUse || !domicilioIdToUse) {
+        throw new Error('ID de cliente o domicilio no válidos');
+      }
+  
       const pedidoPost: PedidoPost = {
-        tipoEnvio: selectedTipoEnvio!, 
+        tipoEnvio: selectedTipoEnvio!,
         formaPago: selectedFormaPago!,
         detallePedidos: cart.map((item) => ({
           cantidad: item.quantity,
-          subTotal:  parseFloat(totalCost.toFixed(2)),
+          subTotal: parseFloat(totalCost.toFixed(2)),
           idArticulo: item.id
         })),
-        idCliente: 1,
-        idDomicilio: 1, 
+        idCliente: clienteIdToUse,
+        idDomicilio: domicilioIdToUse,
       };
-
+  
       console.log('Sending pedidoPost:', JSON.stringify(pedidoPost, null));
-
+  
       await pedidoService.post(`${URL}/pedido`, pedidoPost) as PedidoPost;
       setPedidoConfirmed(true);
       alert('Pedido realizado exitosamente');
@@ -157,6 +142,7 @@ const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, product, total
       alert('Error al realizar el pedido');
     }
   };
+  
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -195,105 +181,6 @@ const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, product, total
         <Typography variant="body1" color="textPrimary" style={{ marginTop: '16px' }}>
           Total Costo: ${finalCost.toFixed(2)}
         </Typography>
-        {selectedTipoEnvio === "DELIVERY" && (
-          <>
-            <Typography variant="h6" color="textPrimary" style={{ marginBottom: '24px', marginTop: '24px' }}>
-              ¡Ingresa la ubicación a la que deseas que se envíe el pedido!
-            </Typography>
-            <FormControl fullWidth margin="normal">
-              <InputLabel id="pais-label">País</InputLabel>
-              <Select
-                labelId="pais-label"
-                value={selectedPais || ''}
-                onChange={handlePaisChange}
-                label="País"
-              >
-                {paises.map((pais) => (
-                  <MenuItem key={pais.id} value={pais.id}>
-                    {pais.nombre}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            {selectedPais && selectedTipoEnvio === "DELIVERY" && (
-              <FormControl fullWidth margin="normal">
-                <InputLabel id="provincia-label">Provincia</InputLabel>
-                <Select
-                  labelId="provincia-label"
-                  value={selectedProvincia || ''}
-                  onChange={handleProvinciaChange}
-                  label="Provincia"
-                >
-                  {provincias.map((provincia) => (
-                    <MenuItem key={provincia.id} value={provincia.id}>
-                      {provincia.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-            {selectedProvincia && selectedTipoEnvio === "DELIVERY" && (
-              <FormControl fullWidth margin="normal">
-                <InputLabel id="localidad-label">Localidad</InputLabel>
-                <Select
-                  labelId="localidad-label"
-                  value={selectedLocalidad || ''}
-                  onChange={handleLocalidadChange}
-                  label="Localidad"
-                >
-                  {localidades.map((localidad) => (
-                    <MenuItem key={localidad.id} value={localidad.id}>
-                      {localidad.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-            {selectedLocalidad && selectedTipoEnvio === "DELIVERY" && (
-              <>
-                <TextField
-                  label="Calle"
-                  fullWidth
-                  margin="normal"
-                  value={calle}
-                  onChange={(e) => setCalle(e.target.value)}
-                />
-                <TextField
-                  label="Número"
-                  fullWidth
-                  margin="normal"
-                  value={numero || ''}
-                  onChange={(e) => setNumero(parseInt(e.target.value))}
-                  type="number"
-                />
-                <TextField
-                  label="Código Postal"
-                  fullWidth
-                  margin="normal"
-                  value={cp || ''}
-                  onChange={(e) => setCp(parseInt(e.target.value))}
-                  type="number"
-                />
-                <TextField
-                  label="Piso"
-                  fullWidth
-                  margin="normal"
-                  value={piso || ''}
-                  onChange={(e) => setPiso(parseInt(e.target.value))}
-                  type="number"
-                />
-                <TextField
-                  label="Número de Departamento"
-                  fullWidth
-                  margin="normal"
-                  value={nroDpto || ''}
-                  onChange={(e) => setNroDpto(parseInt(e.target.value))}
-                  type="number"
-                />
-              </>
-            )}
-          </>
-        )}
       </DialogContent>
       <DialogActions>
         {!finalizado ? (
