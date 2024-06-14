@@ -24,15 +24,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart }) => {
   return (
     <Card style={{ width: '100%' }}>
       <CardActionArea>
-        <CardMedia
-          component="img"
-          height="140"
-          image={product.imagenes[0].url}
-          alt={product.descripcion}
-        />
+        {product.imagenes.length > 0 && (
+          <CardMedia
+            component="img"
+            height="140"
+            image={String(product.imagenes[0])}
+            alt={product.denominacion}
+          />
+        )}
         <CardContent>
           <Typography gutterBottom variant="h5" component="div">
-            {product.descripcion}
+            {product.denominacion}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Precio: ${product.precioVenta}

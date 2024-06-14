@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Route, Routes, Navigate, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useAuth0 } from '@auth0/auth0-react';
 import Navbar from '../components/ui/common/NavBar/NavBar';
 import useCartLogic from '../utils/cartLogic';
@@ -9,13 +9,12 @@ import ProductosPage from '../components/screens/Products/ProductsPage';
 import Main from '../components/screens/Landing/Main';
 import RegisterForm from '../components/screens/Registro/RegisterForm';
 import CallbackPage from '../components/auth/CallbackPage';
-import { fetchProductos } from '../redux/thunks/productoThunks';
+
 import IProducto from '../types/IProducto';
-import { AppDispatch, RootState } from '../redux/store/store';
+import { RootState } from '../redux/store/store';
 import MisPedidos from '../components/screens/MisPedidos/MisPedidos';
 
 const Rutas: React.FC = () => {
-  const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
   const productos = useSelector((state: RootState) => state.productos.data);
   const { cart, addToCart, removeFromCart, clearCart } = useCartLogic();
@@ -24,11 +23,6 @@ const Rutas: React.FC = () => {
   const { isAuthenticated, user } = useAuth0();
   const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    dispatch(fetchProductos()).catch((error) => {
-      console.error('Error al despachar fetchProductos:', error);
-    });
-  }, [dispatch]);
 
   useEffect(() => {
     const checkRegistration = async () => {
@@ -74,7 +68,6 @@ const Rutas: React.FC = () => {
           element={
             isAuthenticated && isRegistered ? (
               <ProductosPage
-                products={productos}
                 addToCart={(productId: number, products: IProducto[]) => addToCart(productId, products)}
               />
             ) : (
