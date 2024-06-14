@@ -5,6 +5,8 @@ import IPedido from '../../../types/IPedido';
 
 import PedidoService from '../../../services/PedidoService';
 import PedidoDetailModal from '../../ui/modals/PedidoDetailModal';
+import { useAuth0 } from '@auth0/auth0-react';
+import ICliente from '../../../types/ICliente';
 
 const MisPedidos: React.FC = () => {
   const [pedidos, setPedidos] = useState<IPedido[]>([]);
@@ -12,14 +14,22 @@ const MisPedidos: React.FC = () => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const pedidoService = new PedidoService();
   const URL: string = import.meta.env.VITE_API_URL as string;
-
+  const { user } = useAuth0();
 
   useEffect(() => {
     const fetchPedidos = async () => {
       try {
-        const pedidos = await pedidoService.getAll(`${URL}/pedido`);
-       //const pedidos = await pedidoService.getAll(`${URL}/clientes/pedidos/${clienteId}`);
-        setPedidos(pedidos);
+        if (user?.email) {
+          const response = await fetch(`${URL}/clientes/email/${encodeURIComponent(user.email)}`);
+          if (!response.ok) {
+            throw new Error('Error fetching client');
+          }
+          const cliente: ICliente = await response.json();
+          console.log(cliente, "cliente");
+
+          const pedidos = await pedidoService.getAll(`${URL}/clientes/pedidos/${cliente.id}`) as IPedido[];
+          setPedidos(pedidos);
+        }
       } catch (error) {
         console.error('Error fetching pedidos:', error);
       }
@@ -28,7 +38,7 @@ const MisPedidos: React.FC = () => {
     fetchPedidos();
   }, []);
 
-  useEffect(() => {
+  /*useEffect(() => {
     const fetchPedidosByEstado = async () => {
       try {
         const pedidos = await pedidoService.getAll(`${URL}/pedido/findByEstado`);
@@ -41,7 +51,7 @@ const MisPedidos: React.FC = () => {
     const intervalId = setInterval(fetchPedidosByEstado, 5000); // recargar cada 5 seconds
 
     return () => clearInterval(intervalId);
-  }, [URL]);
+  }, [URL]);*/
 
   const handleOpenModal = (pedido: IPedido) => {
     setSelectedPedido(pedido);
