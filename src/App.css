@@ -1,0 +1,11 @@
+/* App.css */
+.alert {
+    padding: 20px;
+    background-color: #f44336; /* Red */
+    color: white;
+    text-align: center;
+    margin-bottom: 15px;
+    border-radius: 5px; /* Para hacer las esquinas redondeadas */
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* Para añadir sombra */
+  }
+  
