@@ -19,13 +19,14 @@ const App: React.FC = () => {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Provider store={store}>
-        {showAlert ? (
+        {/* {showAlert ? (
           <div className="alert">
             Fuera del horario de atención. Nuestro horario de atención es de lunes a viernes de 12:00 a 20:00, y de sábados a domingos de 11:00 a 15:00.
           </div>
         ) : (
           <Rutas />
-        )}
+        )} */}
+         <Rutas />
       </Provider>
     </ThemeProvider>
   );

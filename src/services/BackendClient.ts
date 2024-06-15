@@ -156,12 +156,12 @@ export default abstract class BackendClient<T> extends AbstractBackendClient<T> 
   }
 }
 
-export async function createPreferenceMP(pedido: IPedido): Promise<PreferenceMP> {
-  const urlServer = 'http://localhost:8080/apiMp';
+export async function createPreferenceMP(id: any): Promise<PreferenceMP> {
+  const urlServer = `http://localhost:8080/apiMp/${id}`;
   const method = "POST";
   const response = await fetch(urlServer, {
     method: method,
-    body: JSON.stringify(pedido),
+
     headers: {
       "Content-Type": 'application/json'
     }

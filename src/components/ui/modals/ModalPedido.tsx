@@ -4,18 +4,14 @@ import {
   Select, MenuItem, FormControl, InputLabel, 
   Typography
 } from '@mui/material';
-import IPais from '../../../types/IPais';
-import IProvincia from '../../../types/IProvincia';
-import ILocalidad from '../../../types/ILocalidad';
 import CartProduct from '../../../types/CartProduct';
 import PedidoService from '../../../services/PedidoService';
 import PedidoPost from '../../../types/post/PedidoPost';
 import CheckoutMP from '../../screens/CheckoutMP/CheckoutMP';
-import DomicilioService from '../../../services/DomicilioService';
 import ICliente from '../../../types/ICliente';
 import { useAuth0 } from '@auth0/auth0-react';
-import ClienteService from '../../../services/ClienteService';
-import IDomicilio from '../../../types/IDomicilio';
+
+
 
 interface ModalPedidoProps {
   open: boolean;
@@ -35,10 +31,9 @@ const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, totalCost, car
   const [finalizado, setFinalizado] = useState<boolean>(false);
   const [montoCarrito, setMontoCarrito] = useState<number>(0);
   const URL: string = import.meta.env.VITE_API_URL as string;
-  const domicilioService = new DomicilioService();
-  const clienteService = new ClienteService();
-  const [clienteId, setClienteId] = useState<ICliente[]>([]);
-  const [domicilioId,setDomicilio] = useState<IDomicilio[]>([]);
+  const [clienteId, setClienteId] = useState<number>();
+  const [domicilioId,setDomicilio] = useState<number>();
+  const [pedido,setPedido] = useState<any>();
   const { user } = useAuth0();
   
   useEffect(() => {
@@ -61,14 +56,13 @@ const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, totalCost, car
       try {
         if (user?.email) {
           const response = await fetch(`${URL}/clientes/email/${encodeURIComponent(user.email)}`);
-          if (!response.ok) {
-            throw new Error('Error fetching client');
-          }
-          const cliente: ICliente = await response.json();
-          console.log(cliente, "cliente");
+           const cliente: ICliente = await response.json();
+           setClienteId(cliente.id)
+           setDomicilio(cliente.domicilios[0].id)
+           console.log(cliente, "cliente");
          
-          const clientes = await clienteService.getAll(`${URL}/clientes/${cliente.id}`) as ICliente[];
-          setClienteId(clientes);
+          // const clientes = await clienteService.getAll(`${URL}/clientes/${cliente.id}`) as ICliente[];
+          // setClienteId(clientes);
         }
       } catch (error) {
         console.error('Error fetching pedidos:', error);
@@ -77,44 +71,58 @@ const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, totalCost, car
 
     fetchCliente();
   }, []);
-  useEffect(() => {
-    const fetchDomicilio = async () => {
+  // useEffect(() => {
+  //   const fetchDomicilio = async () => {
+  //     try {
+  //       if (user?.email) {
+  //         const response = await fetch(`${URL}/clientes/email/${encodeURIComponent(user.email)}`);
+  //         if (!response.ok) {
+  //           throw new Error('Error fetching client');
+  //         }
+  //         const cliente: ICliente = await response.json();
+  //         console.log(cliente, "cliente");
+
+  //         const domicilio = await domicilioService.getAll(`${URL}/clientes/domicilios/${cliente.id}`) as IDomicilio[];
+  //         setDomicilio(domicilio);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching pedidos:', error);
+  //     }
+  //   };
+
+  //   fetchDomicilio();
+  // }, []);
+
+  const handleSubmit = async () => {
+    try {
       try {
         if (user?.email) {
           const response = await fetch(`${URL}/clientes/email/${encodeURIComponent(user.email)}`);
-          if (!response.ok) {
-            throw new Error('Error fetching client');
-          }
-          const cliente: ICliente = await response.json();
-          console.log(cliente, "cliente");
-
-          const domicilio = await domicilioService.getAll(`${URL}/clientes/domicilios/${cliente.id}`) as IDomicilio[];
-          setDomicilio(domicilio);
+           const cliente: ICliente = await response.json();
+           setClienteId(cliente.id)
+           setDomicilio(cliente.domicilios[0].id)
+           console.log(cliente, "cliente");
+         
+          // const clientes = await clienteService.getAll(`${URL}/clientes/${cliente.id}`) as ICliente[];
+          // setClienteId(clientes);
         }
       } catch (error) {
         console.error('Error fetching pedidos:', error);
       }
-    };
-
-    fetchDomicilio();
-  }, []);
-
-  const handleSubmit = async () => {
-    try {
       console.log('Cliente ID:', clienteId);
       console.log('Domicilio ID:', domicilioId);
   
-      if (clienteId.length === 0 || domicilioId.length === 0) {
-        throw new Error('Cliente o domicilio no encontrados');
-      }
+      // if (clienteId.length === 0 || domicilioId.length === 0) {
+      //   throw new Error('Cliente o domicilio no encontrados');
+      // }
   
-      const clienteIdToUse = clienteId[0]?.id; // Usando optional chaining para acceder al ID
-      const domicilioIdToUse = domicilioId[0]?.id; // Usando optional chaining para acceder al ID
+      // const clienteIdToUse = clienteId[0]?.id; // Usando optional chaining para acceder al ID
+      // const domicilioIdToUse = domicilioId[0]?.id; // Usando optional chaining para acceder al ID
   
-      console.log('Cliente ID a usar:', clienteIdToUse);
-      console.log('Domicilio ID a usar:', domicilioIdToUse);
+      console.log('Cliente ID a usar:', clienteId);
+      console.log('Domicilio ID a usar:', domicilioId);
   
-      if (!clienteIdToUse || !domicilioIdToUse) {
+      if (!clienteId || !domicilioId) {
         throw new Error('ID de cliente o domicilio no válidos');
       }
   
@@ -126,20 +134,25 @@ const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, totalCost, car
           subTotal: parseFloat(totalCost.toFixed(2)),
           idArticulo: item.id
         })),
-        idCliente: clienteIdToUse,
-        idDomicilio: domicilioIdToUse,
+        idCliente: clienteId,
+        idDomicilio: domicilioId,
       };
   
       console.log('Sending pedidoPost:', JSON.stringify(pedidoPost, null));
   
-      await pedidoService.post(`${URL}/pedido`, pedidoPost) as PedidoPost;
+      const pedido2= await pedidoService.post(`${URL}/pedido`, pedidoPost) as PedidoPost;
+      
+      setPedido(pedido2)
+      localStorage.setItem('pedido2', JSON.stringify(pedido2));
+      console.log(pedido);
+      
       setPedidoConfirmed(true);
       alert('Pedido realizado exitosamente');
       setMontoCarrito(totalCost);
       setFinalizado(true);
     } catch (error) {
       console.error('Error al realizar el pedido:', error);
-      alert('Error al realizar el pedido');
+     // alert('Error al realizar el pedido');
     }
   };
   
@@ -188,7 +201,7 @@ const ModalPedido: React.FC<ModalPedidoProps> = ({ open, onClose, totalCost, car
             Confirmar Pedido
           </Button>
         ) : (
-          <CheckoutMP montoCarrito={montoCarrito} />
+          <CheckoutMP />
         )}
         <Button onClick={onClose} color="secondary">
           Cancelar
